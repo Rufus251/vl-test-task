@@ -74,23 +74,23 @@
             <li>
 
               <h2>
-            Текстовая задача №1
+                {{ toDo.name }}
               </h2>
 
               <ul>
                 <li>
                   <p>
-                    Создано:
+                    Создано: {{ toDo.date }}
                   </p>
                 </li>
                 <li>
                   <p>
-                    Приоритет:
+                    Приоритет: {{ toDo.priority }}
                   </p>
                 </li>
                 <li>
                   <p>
-                    Отметки:
+                    Отметки: {{ toDo.marks[0] + " " + toDo.marks[1] + " " + toDo.marks[2] }}
                   </p>
                 </li>
               </ul>
@@ -108,29 +108,52 @@
 
 <script>
 
+import axios from "axios";
+
 export default {
   name: 'HeaderComponent',
 
   data(){
     return{
-      task: "",
-      tasks: [],
       toDoList: []
     }
   },
 
+  created(){
+    this.fetchData()
+  },
+
+  watch: {
+    $route: 'fetchData'
+  },
+
   methods: {
-    add(){
-      // const newTicker = {
-      //   name: "",
-      //   date: "",
-      //   priority: "",
-      //   mark: "",
-      //   description: ""
-      // }
 
+    fixToDoListMarks(marks){
+      for (let i = 0; i < 3; i++){
+        if (marks[i] == undefined){
+          marks[i] = "";
+        }
+      }
       
+      return marks;
+    },
 
+    fetchData(){
+      axios
+        .get("http://localhost:3001/tasks")
+        .then(response =>{
+            response.data.forEach((value) => {
+              if (!this.toDoList.includes(value)) {
+                value.marks = this.fixToDoListMarks(value.marks);
+                this.toDoList.push(value);
+              }
+            })
+            console.log("Массив data: ", this.toDoList);
+        })
+        .catch(error => {
+            console.log(error);
+        });
     },
 
     redirect(){
@@ -149,6 +172,10 @@ export default {
   box-sizing: border-box;
 
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+body{
+  background-color: #F9FAFE;
 }
 
 $blueColor: #0091DC;
@@ -237,6 +264,10 @@ $inputFontColor: #414141;
 
 .tasks{
   margin-top: 30px;
+
+  .task{
+    margin-top: 30px;
+  }
 
   ul{
     list-style: none;

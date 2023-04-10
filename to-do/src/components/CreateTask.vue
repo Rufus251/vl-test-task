@@ -7,7 +7,7 @@
         </div>
 
         <div class="taskData">
-            <form method="POST" action="">
+            <form @submit="sendForm()" method="POST" action="localhost:3001/users">
                 <ul>
                     <li>
                         <h2>НАЗВАНИЕ ЗАДАЧИ</h2>
@@ -30,16 +30,16 @@
                         <div class="marks">
                             <ul>
                                 <li>
-                                    <input v-model="newTask.marks" value="markResearch" type="checkbox" id="markResearch" name="markResearch">
-                                    <label for="markResearch">Research</label>
+                                    <input v-model="newTask.marks" value="Research" type="checkbox" id="Research" name="Research">
+                                    <label for="Research">Research</label>
                                 </li>
                                 <li>
-                                    <input v-model="newTask.marks" value="markDesign" type="checkbox" id="markDesign" name="markDesign">
-                                <label for="markDesign">Design</label>
+                                    <input v-model="newTask.marks" value="Design" type="checkbox" id="Design" name="Design">
+                                <label for="Design">Design</label>
                                 </li>
                                 <li>
-                                    <input v-model="newTask.marks" value="markDevelopment" type="checkbox" id="markDevelopment" name="markDevelopment">
-                                <label for="markDevelopment">Development</label>
+                                    <input v-model="newTask.marks" value="Development" type="checkbox" id="Development" name="Development">
+                                <label for="Development">Development</label>
                                 </li>
                             </ul>
 
@@ -51,12 +51,8 @@
                         <textarea v-model="newTask.description" name="description" id="description" required>Description</textarea>
                     </li>
                 </ul>
-                {{ newTask.name }} <br>
-                {{ newTask.priority }} <br>
-                {{ newTask.description }} <br>
-                {{ newTask.marks }} <br>
-                <br>
-                <button @click="add()" name="saveBtn" id="saveBtn"> Сохранить </button>
+
+                <button @click="sendData(), add()" name="saveBtn" id="saveBtn"> Сохранить </button>
             </form>
         </div>
     </div>
@@ -64,7 +60,7 @@
 
 <script>
 
-
+import axios from "axios";
 
 export default {
   name: 'CreateTask',
@@ -97,7 +93,9 @@ export default {
             return;
         }
 
-        console.log(this.newTask, this.toDoList)
+        //console.log(this.newTask, this.toDoList)
+
+        this.newTask.date = this.printDate() + ", " + this.printTime();
 
         // Добавляем в массив задач
         this.toDoList.push(this.newTask.name);
@@ -107,13 +105,29 @@ export default {
         this.newTask.priority="";
         this.newTask.marks=[];
         this.newTask.description="";
-        this.newTask.date=0;
 
-        console.log(this.toDoList);
+        //console.log(this.toDoList);
 
         // Переход на главную страницу
         this.$router.push('/');
     },
+
+
+
+    sendData(){
+
+        axios
+        .post("http://localhost:3001/tasks", {
+            name: this.newTask.name,
+            priority: this.newTask.priority,
+            marks: this.newTask.marks,
+            description: this.newTask.description,
+            date: this.printDate() + ", " + this.printTime()
+        })
+
+        
+    },
+
   }
 
 };
