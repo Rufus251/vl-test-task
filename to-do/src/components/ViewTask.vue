@@ -4,8 +4,8 @@
             <a href="#/">
                 <input type="button" class="back" value="Назад">
             </a>
-            <a href="#/create">
-                <input type="button" class="edit" value="Редактировать">
+            <a :href="`#/create/${this.taskId()}`">
+                <input @click="editTaskRedirect" type="button" class="edit" value="Редактировать">
             </a>
         </div>
 
@@ -16,7 +16,7 @@
                         НАЗВАНИЕ ЗАДАЧИ
                     </h2>
                     <p>
-                        Lorem, ipsum.
+                        {{ this.task.name }}
                     </p>
                 </li>
                 <li>
@@ -24,7 +24,7 @@
                         ДАТА СОЗДАНИЯ
                     </h2>
                     <p>
-                        Lorem, ipsum.
+                        {{ this.task.date }}
                     </p>
                 </li>
                 <li>
@@ -32,7 +32,7 @@
                         ПРИОРИТЕТ
                     </h2>
                     <p>
-                        Lorem, ipsum.
+                        {{ this.task.priority }}
                     </p>
                 </li>
                 <li>
@@ -40,7 +40,7 @@
                         ОТМЕТКИ
                     </h2>
                     <p>
-                        Lorem, ipsum.
+                        {{ this.task.marks[0] + " " + this.task.marks[1] + " " + this.task.marks[2] }}
                     </p>
                 </li>
                 <li>
@@ -48,27 +48,87 @@
                         ОПИСАНИЕ
                     </h2>
                     <p>
-                        Lorem, ipsum.
-                    </p>
-                </li>
-                <li>
-                    <h2>
-                        TO DO
-                    </h2>
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia nostrum illo blanditiis deserunt, neque, culpa quod adipisci ea eius alias assumenda. Similique, delectus nam maiores voluptatum, magnam natus aliquam, autem alias numquam deleniti est! Quo nesciunt quidem quis libero corrupti vitae sit distinctio illo dignissimos vel iure, laborum doloremque nostrum!
+                        {{ this.task.description }}
                     </p>
                 </li>
             </ul>
         </div>
-
         <div class="deleteBtn">
-            <input type="button" class="delete" value="Удалить">
+            <input @click="deleteTask()" type="button" class="delete" value="Удалить">
         </div>
     </div>
 </template>
 
 <script>
+
+import axios from "axios";
+
+export default{
+    data(){
+        return{
+            task: {
+                name: "",
+                priority: "",
+                marks: ["", "", ""],
+                description: "",
+                date: "",
+            }
+        }
+    },
+
+    created(){
+        this.getTask()
+    },
+
+    watch: {
+        $route: 'getTask'
+    },
+
+    methods: {
+        
+        taskId(){
+            return parseInt(this.$route.params.id);
+        },
+
+        deleteTask(){
+            const path = "http://localhost:3001/tasks/" + this.taskId();
+            axios.delete(path);
+            this.$router.go(-1)
+        },
+
+        getTask(){
+            axios
+            .get("http://localhost:3001/tasks", {
+                params: {
+                    id: this.taskId(),
+                }
+            })
+            .then(response =>{
+                this.task.name =  response.data[0].name,
+                this.task.priority =  response.data[0].priority,
+                this.task.marks = this.fixToDoListMarks(response.data[0].marks),
+                this.task.description =  response.data[0].description,
+                this.task.date =  response.data[0].date
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        },
+
+        fixToDoListMarks(marks){
+            for (let i = 0; i < 3; i++){
+                if (marks[i] == undefined){
+                marks[i] = "";
+                }
+                if (marks[i+1] != undefined){
+                marks[i] = marks[i] + ", "
+                }
+            }
+      
+            return marks;
+        },
+    }
+}
 </script>
 
 
@@ -91,7 +151,8 @@
     
     $btnFontSize: 16px;
     .wrapper{
-        width: 100%;
+        width: 270px;
+        margin: 0 auto;
     }
     .button{
         width: 100%;

@@ -3,7 +3,7 @@
     
     <div class="viewTasks">
       <div class="button">
-        <a href="#/create">
+        <a href="#/create/new">
           <input type="button" value="Добавить задачу">
         </a>
       </div>
@@ -68,7 +68,7 @@
       </div>
 
       <div class="tasks">
-        <div class="task" @click='redirect()' v-for="(toDo, idx) in toDoList" :key="idx">
+        <div class="task" @click='redirect(toDo.id)' v-for="(toDo, idx) in toDoList" :key="idx">
           <ul>
 
             <li>
@@ -134,6 +134,9 @@ export default {
         if (marks[i] == undefined){
           marks[i] = "";
         }
+        if (marks[i+1] != undefined){
+          marks[i] = marks[i] + ", "
+        }
       }
       
       return marks;
@@ -149,15 +152,16 @@ export default {
                 this.toDoList.push(value);
               }
             })
-            console.log("Массив data: ", this.toDoList);
         })
         .catch(error => {
             console.log(error);
         });
     },
 
-    redirect(){
-      this.$router.push('view');
+    redirect(id){
+      console.log(id);
+      let path = "view/" + id;
+      this.$router.push(path);
     },
   }
 
@@ -172,6 +176,11 @@ export default {
   box-sizing: border-box;
 
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.wrapper{
+  width: 270px;
+  margin: 0 auto;
 }
 
 body{
@@ -267,6 +276,7 @@ $inputFontColor: #414141;
 
   .task{
     margin-top: 30px;
+    cursor: pointer;
   }
 
   ul{

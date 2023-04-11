@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
         <div class="button">
-            <a href="#/">
+            <a @click="$router.go(-1)">
                 <input type="button" class="back" value="Назад">
             </a>
         </div>
@@ -51,7 +51,6 @@
                         <textarea v-model="newTask.description" name="description" id="description" required>Description</textarea>
                     </li>
                 </ul>
-
                 <button @click="sendData(), add()" name="saveBtn" id="saveBtn"> Сохранить </button>
             </form>
         </div>
@@ -79,6 +78,13 @@ export default {
     }
   },
 
+    created(){
+    this.getTask()
+    },
+
+    watch: {
+        $route: 'getTask'
+    },
   methods: {
     printDate: function () {
         return new Date().toLocaleDateString();
@@ -89,7 +95,7 @@ export default {
 
     add(){
         // Проверка на заполненность полей
-        if (this.newTask.name === "" || this.newTask.priority === "" || this.newTask.description === "") {
+        if (this.newTask.name === "" || this.newTask.priority == "" || this.newTask.description === "") {
             return;
         }
 
@@ -112,20 +118,55 @@ export default {
         this.$router.push('/');
     },
 
-
-
     sendData(){
-
-        axios
-        .post("http://localhost:3001/tasks", {
-            name: this.newTask.name,
-            priority: this.newTask.priority,
-            marks: this.newTask.marks,
-            description: this.newTask.description,
-            date: this.printDate() + ", " + this.printTime()
+        const path = "http://localhost:3001/tasks/" + this.taskId()
+        if (this.newTask.date === ""){
+            this.newTask.date = this.printDate() + ", " + this.printTime()
+            axios
+            .post("http://localhost:3001/tasks", {
+                name: this.newTask.name,
+                priority: this.newTask.priority,
+                marks: this.newTask.marks,
+                description: this.newTask.description,
+                date: this.newTask.date
         })
+        }
+        else{
+            axios.put( path, {
+                name: this.newTask.name,
+                priority: this.newTask.priority,
+                marks: this.newTask.marks,
+                description: this.newTask.description,
+                date: this.newTask.date
+            })
+        }
+        
 
         
+    },
+
+    taskId(){
+            return parseInt(this.$route.params.id);
+        },
+
+    getTask(){
+        axios
+        .get("http://localhost:3001/tasks", {
+            params: {
+                id: this.taskId(),
+            }
+        })
+        .then(response =>{
+            console.log(response.data[0].marks),
+            this.newTask.name =  response.data[0].name,
+            this.newTask.priority =  response.data[0].priority,
+            this.newTask.marks = response.data[0].marks,
+            this.newTask.description =  response.data[0].description,
+            this.newTask.date =  response.data[0].date
+        })
+        .catch(error => {
+            console.log(error);
+        });
     },
 
   }
@@ -149,7 +190,14 @@ export default {
     
     $btnFontSize: 16px;
     .wrapper{
-        width: 100%;
+        width: 270px;
+        margin: 0 auto;
+
+        display: flex;
+        flex-direction: column;
+
+        justify-content: center;
+        align-items: center;
     }
     .button{
         width: 100%;
@@ -180,11 +228,16 @@ export default {
     $HeaderFontColor: #808080;
     $ContentFontColor: #464646;
     .taskData{
+        display: flex;
+        flex-direction: column;
 
+        justify-content: center;
+        align-items: center;
         ul{
             list-style: none;
 
             li{
+        
                 margin-top: 25px;
 
                 
@@ -253,7 +306,7 @@ export default {
         $saveBtnBgColor: #0091DC;
         $saveBtnTextColor: #ffffff;
         button{
-            margin-top: 30px;
+            margin: 30px auto;
             padding: 15px;
             border: 0;
             border-radius: 6px;  

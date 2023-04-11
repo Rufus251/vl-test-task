@@ -7,7 +7,7 @@ export default createRouter({
     history: createWebHashHistory(),
     routes: [
         { path: '/', component: HeaderComponent},
-        { path: '/view', component: ViewTask},
-        { path: '/create', component: CreateTask}
+        { path: '/view/:id', component: ViewTask},
+        { path: '/create/:id', component: CreateTask}
     ]
 })
