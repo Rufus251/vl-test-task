@@ -178,9 +178,6 @@ export default{
         .back{
             color: $backTextColor;
             background-color: $backBtnBgColor;
-            
-
-
         }
         .edit{
             color: $editTextColor;
@@ -249,10 +246,6 @@ export default{
     @media (min-width: 768px) {
         .wrapper{
             width: 90%;
-        }
-
-        .button{
-            
         }
         
         .wrapper{
