@@ -18,14 +18,14 @@
               <li>
                 <input 
                 v-model="filterParams.oldest" 
-                @click="filterList()" 
+                @click="switchOldest()" 
                 type="radio" value="new" id="new" name="data">
                 <label for="new">Новые</label>
               </li>
               <li>
                 <input 
                 v-model="filterParams.oldest" 
-                @click="filterList()" 
+                @click="switchOldest()" 
                 type="radio" value="old" id="old" name="data">
                 <label for="old">Старые</label>
               </li>
@@ -151,7 +151,10 @@ export default {
       filteredList: [],
 
 
-      flagForFilter: false
+      flagForFilter: false,
+
+      // Для радиокнопок
+      previusValue: "old"
     }
   },
 
@@ -196,7 +199,6 @@ export default {
     },
 
     redirect(id){
-      console.log(id);
       let path = "view/" + id;
       this.$router.push(path);
     },
@@ -220,7 +222,6 @@ export default {
             }
             
             const markPlus = this.filterParams.marks + ", "
-            console.log(mark, markPlus)
 
             if ((this.filterParams.marks.includes(mark) || markPlus == mark || this.filterParams.marks.length === 0)){
               this.flagForFilter = true
@@ -237,7 +238,18 @@ export default {
         });
 
 
-      }, 700);
+      }, 400);
+    },
+
+    switchOldest(){
+      setTimeout(() => {
+        if (this.filterParams.oldest !== this.previusValue){
+          this.filteredList.reverse()
+        }
+
+        this.previusValue = this.filterParams.oldest;
+        
+      }, 400);
     }
   }
 
