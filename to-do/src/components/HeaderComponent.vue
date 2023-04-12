@@ -275,7 +275,6 @@ export default {
           }
 
           this.filterList();
-          console.log(this.taskCounter);
         }
 
       }, 3000);
