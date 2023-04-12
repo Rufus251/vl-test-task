@@ -150,8 +150,11 @@ export default {
       },
       filteredList: [],
 
-
+      // Для сортировки по новизне
       flagForFilter: false,
+
+      // До какой задачи подгружать
+      taskCounter: 15,
 
       // Для радиокнопок
       previusValue: "old"
@@ -160,7 +163,8 @@ export default {
 
   created(){
     this.fetchData(),
-    this.filterList()
+    this.filterList(),
+    this.whereIsScroll()
   },
 
   watch: {
@@ -207,6 +211,9 @@ export default {
       setTimeout(() => {
         if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
           this.filteredList = this.toDoList;
+
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
           return
         }
         this.filteredList = [];
@@ -235,6 +242,8 @@ export default {
             this.filteredList.push(value);
           }
 
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
         });
 
 
@@ -250,6 +259,26 @@ export default {
         this.previusValue = this.filterParams.oldest;
         
       }, 400);
+    },
+
+    whereIsScroll(){
+      setInterval(() => {
+        var scrollHeight=document.documentElement.scrollHeight;
+        var clientHeight=document.documentElement.clientHeight;
+        var currentScrollHeight = document.documentElement.scrollTop;
+  
+        if (currentScrollHeight >= scrollHeight - clientHeight - 400){
+          this.taskCounter += 15;
+
+          if (this.taskCounter >= this.toDoList.length){
+            this.taskCounter = this.toDoList.length;
+          }
+
+          this.filterList();
+          console.log(this.taskCounter);
+        }
+
+      }, 3000);
     }
   }
 
