@@ -7,7 +7,6 @@
         </div>
 
         <div class="taskData">
-            <form @submit="sendForm()" method="POST" action="localhost:3001/users">
                 <ul>
                     <li>
                         <h2>НАЗВАНИЕ ЗАДАЧИ</h2>
@@ -48,11 +47,11 @@
                     </li>
                     <li>
                         <h2>ОПИСАНИЕ</h2>
-                        <textarea v-model="newTask.description" name="description" id="description" required>Description</textarea>
+                        <textarea v-model="newTask.description" name="description" id="description" required placeholder="...">Description</textarea>
                     </li>
                 </ul>
                 <button @click="sendData(), add()" name="saveBtn" id="saveBtn"> Сохранить </button>
-            </form>
+            
         </div>
     </div>
 </template>
@@ -228,19 +227,23 @@ export default {
     $HeaderFontColor: #808080;
     $ContentFontColor: #464646;
     .taskData{
+        background-color: #ffffff;
+
+        margin-top: 20px;
+        padding: 1px 30px 1px 30px;
+
         display: flex;
         flex-direction: column;
 
-        justify-content: center;
         align-items: center;
+        justify-content: center;
+
         ul{
             list-style: none;
 
-            li{
-        
-                margin-top: 25px;
+            li{        
+                margin-top: 30px;
 
-                
                 h2{
                     font-size: $FontSize;
                     color: $HeaderFontColor;
@@ -254,10 +257,12 @@ export default {
 
                     font-size: 16px;
 
-                    border: none;
+                    border: 1px solid #F1F1F1;
+                    padding: 5px;
+                    
                     outline: none;
                 }
-                
+
                 p{
                     font-size: $FontSize;
                     color: $ContentFontColor;
@@ -272,6 +277,8 @@ export default {
                         align-items: center;
                     }
                     input{
+                        border: 1px solid #F1F1F1;
+
                         margin-top: 0;
                         width: 18px;
                         height: 18px;
@@ -285,12 +292,14 @@ export default {
                 textarea{
                     margin-top: 10px;
 
+                    padding: 5px;
+
                     resize: none;
 
                     width: 100%;
                     height: 120px;
 
-                    border: none;
+                    border: 1px solid #F1F1F1;
 
                     font-size: $FontSize;
                     color: $ContentFontColor;
@@ -320,6 +329,26 @@ export default {
             &:hover{
                 opacity: 0.9;
             }
+        }
+    }
+
+    @media (min-width: 768px) {
+        .wrapper{
+            width: 90%;
+
+            
+        }
+
+        .button{
+            display: block;
+
+            margin-top: 20px;
+        }
+
+        .taskData{
+            width: 100%;
+            
+            display: block;
         }
     }
 </style>

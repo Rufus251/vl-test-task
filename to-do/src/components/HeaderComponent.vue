@@ -1,109 +1,135 @@
 <template>
-  <div class="wrapper">
-    
-    <div class="viewTasks">
-      <div class="button">
-        <a href="#/create/new">
-          <input type="button" value="Добавить задачу">
-        </a>
-      </div>
+
+    <div class="wrapper">
       
-      <div class="sort">
-        <div class="sort__radio">
-          <h2 class="header">
-            СОРТИРОВКА
-          </h2>
-          <ul>
-            <li>
-              <input type="radio" id="new" name="data">
-              <label for="new">Новые</label>
-            </li>
-            <li>
-              <input type="radio" id="old" name="data">
-              <label for="old">Старые</label>
-            </li>
-          </ul>
+      <div class="viewTasks">
+        <div class="button">
+          <a href="#/create/new">
+            <input type="button" value="Добавить задачу">
+          </a>
         </div>
-
-        <div class="sort__wrapper">
-          <div class="sort__checkbox">
+        
+        <div class="sort">
+          <div class="sort__radio">
             <h2 class="header">
-              ПРИОРИТЕТ
+              СОРТИРОВКА
             </h2>
             <ul>
               <li>
-                <input type="checkbox" id="Low">
-                <label for="Low">Low</label>
+                <input 
+                v-model="filterParams.oldest" 
+                @click="switchOldest()" 
+                type="radio" value="new" id="new" name="data">
+                <label for="new">Новые</label>
               </li>
               <li>
-                <input type="checkbox" id="Normal">
-                <label for="Normal">Normal</label>
-              </li>
-              <li>
-                <input type="checkbox" id="High">
-                <label for="High">High</label>
+                <input 
+                v-model="filterParams.oldest" 
+                @click="switchOldest()" 
+                type="radio" value="old" id="old" name="data">
+                <label for="old">Старые</label>
               </li>
             </ul>
           </div>
-          <div class="sort__checkbox">
-            <h2 class="header">
-              ОТМЕТКА
-            </h2>
-            <ul>
-              <li>
-                <input type="checkbox" id="Research">
-                <label for="Research">Research</label>
-              </li>
-              <li>
-                <input type="checkbox" id="Design">
-                <label for="Design">Design</label>
-              </li>
-              <li>
-                <input type="checkbox" id="Development">
-                <label for="Development">Development</label>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
 
-      <div class="tasks">
-        <div class="task" @click='redirect(toDo.id)' v-for="(toDo, idx) in toDoList" :key="idx">
-          <ul>
-
-            <li>
-
-              <h2>
-                {{ toDo.name }}
+          <div class="sort__wrapper">
+            <div class="sort__checkbox">
+              <h2 class="header">
+                ПРИОРИТЕТ
               </h2>
-
               <ul>
                 <li>
-                  <p>
-                    Создано: {{ toDo.date }}
-                  </p>
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="Low" type="checkbox" id="Low">
+                  <label for="Low">Low</label>
                 </li>
                 <li>
-                  <p>
-                    Приоритет: {{ toDo.priority }}
-                  </p>
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="Normal" type="checkbox" id="Normal">
+                  <label for="Normal">Normal</label>
                 </li>
                 <li>
-                  <p>
-                    Отметки: {{ toDo.marks[0] + " " + toDo.marks[1] + " " + toDo.marks[2] }}
-                  </p>
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="High" type="checkbox" id="High">
+                  <label for="High">High</label>
                 </li>
               </ul>
-
-            </li>
-
-          </ul>
-
+            </div>
+            <div class="sort__checkbox">
+              <h2 class="header">
+                ОТМЕТКА
+              </h2>
+              <ul>
+                <li>
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Research" type="checkbox" id="Research">
+                  <label for="Research">Research</label>
+                </li>
+                <li>
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Design" type="checkbox" id="Design">
+                  <label for="Design">Design</label>
+                </li>
+                <li>
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Development" type="checkbox" id="Development">
+                  <label for="Development">Development</label>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>  
+
+        <div class="tasks">
+          <div class="task" @click='redirect(toDo.id)' v-for="(toDo, idx) in filteredList" :key="idx">
+            <ul>
+
+              <li>
+
+                <h2>
+                  {{ toDo.name }}
+                </h2>
+
+                <ul>
+                  <li>
+                    <p>
+                      Создано: {{ toDo.date }}
+                    </p>
+                  </li>
+                  <li>
+                    <p>
+                      Приоритет: {{ toDo.priority }}
+                    </p>
+                  </li>
+                  <li>
+                    <p>
+                      Отметки: {{ toDo.marks[0] + " " + toDo.marks[1] + " " + toDo.marks[2] }}
+                    </p>
+                  </li>
+                </ul>
+
+              </li>
+
+            </ul>
+
+          </div>
+        </div>  
+      </div>
+
     </div>
 
-  </div>
 </template>
 
 <script>
@@ -115,32 +141,37 @@ export default {
 
   data(){
     return{
-      toDoList: []
+      toDoList: [],
+
+      filterParams: {
+        oldest: "",
+        priority: [],
+        marks: []
+      },
+      filteredList: [],
+
+      // Для сортировки по новизне
+      flagForFilter: false,
+
+      // До какой задачи подгружать
+      taskCounter: 15,
+
+      // Для радиокнопок
+      previusValue: "old"
     }
   },
 
   created(){
-    this.fetchData()
+    this.fetchData(),
+    this.filterList(),
+    this.whereIsScroll()
   },
 
   watch: {
-    $route: 'fetchData'
+    $route: 'fetchData',
   },
 
   methods: {
-
-    fixToDoListMarks(marks){
-      for (let i = 0; i < 3; i++){
-        if (marks[i] == undefined){
-          marks[i] = "";
-        }
-        if (marks[i+1] != undefined){
-          marks[i] = marks[i] + ", "
-        }
-      }
-      
-      return marks;
-    },
 
     fetchData(){
       axios
@@ -158,11 +189,96 @@ export default {
         });
     },
 
+    fixToDoListMarks(marks){
+      for (let i = 0; i < 3; i++){
+        if (marks[i] == undefined){
+          marks[i] = "";
+        }
+        if (marks[i+1] != undefined){
+          marks[i] = marks[i] + ", "
+        }
+      }
+      
+      return marks;
+    },
+
     redirect(id){
-      console.log(id);
       let path = "view/" + id;
       this.$router.push(path);
     },
+
+    filterList(){
+      setTimeout(() => {
+        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
+          this.filteredList = this.toDoList;
+
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+          return
+        }
+        this.filteredList = [];
+
+
+        this.toDoList.map( value => {
+
+          this.flagForFilter = false
+
+          value.marks.forEach( (mark) => {
+            if (mark === ""){
+              return 
+            }
+            
+            const markPlus = this.filterParams.marks + ", "
+
+            if ((this.filterParams.marks.includes(mark) || markPlus == mark || this.filterParams.marks.length === 0)){
+              this.flagForFilter = true
+            }
+            else{
+              return
+            }
+          })
+
+          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
+            this.filteredList.push(value);
+          }
+
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+        });
+
+
+      }, 400);
+    },
+
+    switchOldest(){
+      setTimeout(() => {
+        if (this.filterParams.oldest !== this.previusValue){
+          this.filteredList.reverse()
+        }
+
+        this.previusValue = this.filterParams.oldest;
+        
+      }, 400);
+    },
+
+    whereIsScroll(){
+      setInterval(() => {
+        var scrollHeight=document.documentElement.scrollHeight;
+        var clientHeight=document.documentElement.clientHeight;
+        var currentScrollHeight = document.documentElement.scrollTop;
+  
+        if (currentScrollHeight >= scrollHeight - clientHeight - 400){
+          this.taskCounter += 15;
+
+          if (this.taskCounter >= this.toDoList.length){
+            this.taskCounter = this.toDoList.length;
+          }
+
+          this.filterList();
+        }
+
+      }, 3000);
+    }
   }
 
 };
@@ -183,9 +299,6 @@ export default {
   margin: 0 auto;
 }
 
-body{
-  background-color: #F9FAFE;
-}
 
 $blueColor: #0091DC;
 
@@ -224,10 +337,17 @@ $inputFontColor: #414141;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  // &__wrapper{
-  //   display: flex;
-  //   justify-content: center;
-  // }
+
+  &__radio{
+    background-color: #ffffff;
+    padding: 10px;
+  }
+
+  &__wrapper{
+    background-color: #ffffff;
+    padding: 10px;
+  }
+
   h2{
     font-size: $headerFontSize;
     color: $headerFontColor;
@@ -236,6 +356,7 @@ $inputFontColor: #414141;
   ul{
     list-style: none;
     li{
+
       margin-top: 8px;
 
       font-size: $inputFontSize;
@@ -248,7 +369,6 @@ $inputFontColor: #414141;
       width: 18px;
       height: 18px;
 
-  //#D1D1D1
       border: 20px solid #000000;
       }
       label{
@@ -275,12 +395,94 @@ $inputFontColor: #414141;
   margin-top: 30px;
 
   .task{
+    background-color: #ffffff;
+    padding: 10px;
+
     margin-top: 30px;
     cursor: pointer;
+    
+
+    ul li h2{
+      display: block;
+      word-wrap: break-word;
+    }
   }
 
   ul{
     list-style: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .wrapper{
+    width: 90%;
+  }
+  .viewTasks{
+    display: grid;
+    gap: 50px;
+
+    grid-template-columns: (200px, );
+    grid-template-rows: (50px, );
+    
+    .button{
+      margin-top: 30px;
+      display: block;
+      
+      grid-column-start: 2;
+      grid-column-end: 3;
+
+      grid-row-start: 1;
+      grid-row-end: 2;
+    }
+
+    .sort{
+      display: flex;
+      flex-direction: column;
+      justify-content: left;
+
+      grid-column-start: 1;
+      grid-column-end: 2;
+
+      grid-row-start: 1;
+      grid-row-end: 3;
+
+      &__radio{
+        background-color: #ffffff;
+        padding: 10px;
+      }
+
+      &__wrapper{
+        background-color: #ffffff;
+        padding: 10px;
+
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    .tasks{
+      margin-top: 0;
+
+      width: 100%;
+
+      grid-column-start: 2;
+      grid-column-end: 3;
+
+      grid-row-start: 2;
+      grid-row-end: 3;
+
+      .task{
+        background-color: #ffffff;
+        padding: 10px;
+
+        max-width: 65vw;
+
+        ul li h2{
+          max-width: 55vw;
+
+        }
+      }
+    }
   }
 }
 
