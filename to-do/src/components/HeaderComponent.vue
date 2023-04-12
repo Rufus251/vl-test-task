@@ -16,11 +16,17 @@
             </h2>
             <ul>
               <li>
-                <input type="radio" id="new" name="data">
+                <input 
+                v-model="filterParams.oldest" 
+                @click="filterList()" 
+                type="radio" value="new" id="new" name="data">
                 <label for="new">Новые</label>
               </li>
               <li>
-                <input type="radio" id="old" name="data">
+                <input 
+                v-model="filterParams.oldest" 
+                @click="filterList()" 
+                type="radio" value="old" id="old" name="data">
                 <label for="old">Старые</label>
               </li>
             </ul>
@@ -33,15 +39,24 @@
               </h2>
               <ul>
                 <li>
-                  <input type="checkbox" id="Low">
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="Low" type="checkbox" id="Low">
                   <label for="Low">Low</label>
                 </li>
                 <li>
-                  <input type="checkbox" id="Normal">
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="Normal" type="checkbox" id="Normal">
                   <label for="Normal">Normal</label>
                 </li>
                 <li>
-                  <input type="checkbox" id="High">
+                  <input 
+                  v-model="filterParams.priority" 
+                  @click="filterList()" 
+                  value="High" type="checkbox" id="High">
                   <label for="High">High</label>
                 </li>
               </ul>
@@ -52,15 +67,24 @@
               </h2>
               <ul>
                 <li>
-                  <input type="checkbox" id="Research">
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Research" type="checkbox" id="Research">
                   <label for="Research">Research</label>
                 </li>
                 <li>
-                  <input type="checkbox" id="Design">
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Design" type="checkbox" id="Design">
                   <label for="Design">Design</label>
                 </li>
                 <li>
-                  <input type="checkbox" id="Development">
+                  <input
+                  v-model="filterParams.marks"
+                  @click="filterList()" 
+                  value="Development" type="checkbox" id="Development">
                   <label for="Development">Development</label>
                 </li>
               </ul>
@@ -69,7 +93,7 @@
         </div>
 
         <div class="tasks">
-          <div class="task" @click='redirect(toDo.id)' v-for="(toDo, idx) in toDoList" :key="idx">
+          <div class="task" @click='redirect(toDo.id)' v-for="(toDo, idx) in filteredList" :key="idx">
             <ul>
 
               <li>
@@ -117,12 +141,23 @@ export default {
 
   data(){
     return{
-      toDoList: []
+      toDoList: [],
+
+      filterParams: {
+        oldest: "",
+        priority: [],
+        marks: []
+      },
+      filteredList: [],
+
+
+      flagForFilter: false
     }
   },
 
   created(){
-    this.fetchData()
+    this.fetchData(),
+    this.filterList()
   },
 
   watch: {
@@ -130,19 +165,6 @@ export default {
   },
 
   methods: {
-
-    fixToDoListMarks(marks){
-      for (let i = 0; i < 3; i++){
-        if (marks[i] == undefined){
-          marks[i] = "";
-        }
-        if (marks[i+1] != undefined){
-          marks[i] = marks[i] + ", "
-        }
-      }
-      
-      return marks;
-    },
 
     fetchData(){
       axios
@@ -160,13 +182,63 @@ export default {
         });
     },
 
+    fixToDoListMarks(marks){
+      for (let i = 0; i < 3; i++){
+        if (marks[i] == undefined){
+          marks[i] = "";
+        }
+        if (marks[i+1] != undefined){
+          marks[i] = marks[i] + ", "
+        }
+      }
+      
+      return marks;
+    },
+
     redirect(id){
       console.log(id);
       let path = "view/" + id;
       this.$router.push(path);
     },
 
-    
+    filterList(){
+      setTimeout(() => {
+        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
+          this.filteredList = this.toDoList;
+          return
+        }
+        this.filteredList = [];
+
+
+        this.toDoList.map( value => {
+
+          this.flagForFilter = false
+
+          value.marks.forEach( (mark) => {
+            if (mark === ""){
+              return 
+            }
+            
+            const markPlus = this.filterParams.marks + ", "
+            console.log(mark, markPlus)
+
+            if ((this.filterParams.marks.includes(mark) || markPlus == mark || this.filterParams.marks.length === 0)){
+              this.flagForFilter = true
+            }
+            else{
+              return
+            }
+          })
+
+          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
+            this.filteredList.push(value);
+          }
+
+        });
+
+
+      }, 700);
+    }
   }
 
 };
