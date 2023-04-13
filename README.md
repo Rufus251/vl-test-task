@@ -1,5 +1,3 @@
-# vl-test-task
-
 <h1> Test project junior frontend developer </h1>
 Test task for a summer internship at Farpost
 
