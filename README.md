@@ -8,9 +8,8 @@ Create a task manager consisting of three pages on the Vue framework
 
 <h1> How to view a project </h1>
 <ul>
-
-    <li> Download repository </li>
-    <li> Open repository in any development environment </li>
-    <li> Write run dev in console </li>
+     Download repository
+     Open repository in any development environment
+     Write run dev in console 
 
 </ul>
