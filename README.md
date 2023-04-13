@@ -10,6 +10,6 @@ Create a task manager consisting of three pages on the Vue framework
 <ul>
      <li> Download repository
      <li> Open repository in any development environment
-     <li> Write run dev in console 
+     <li> Write "npm run dev" in console 
 
 </ul>
