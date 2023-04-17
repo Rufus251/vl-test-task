@@ -4,9 +4,7 @@
       
       <div class="viewTasks">
         <div class="button">
-          <a href="#/create/new">
-            <input type="button" value="Добавить задачу">
-          </a>
+          <button @click="$router.push(`/create/new`)"> Добавить задачу </button>
         </div>
         
         <div class="sort">
@@ -115,8 +113,9 @@
                   </li>
                   <li>
                     <p>
-                      Отметки: {{ toDo.marks[0] + " " + toDo.marks[1] + " " + toDo.marks[2] }}
+                      Отметки: 
                     </p>
+                    <pre v-for="marks in toDo.marks" :key="marks"> {{marks}}</pre>
                   </li>
                 </ul>
 
@@ -160,8 +159,8 @@ export default {
       previusValue: "old"
     }
   },
-
-  created(){
+  
+  mounted(){
     this.fetchData(),
     this.filterList(),
     this.whereIsScroll()
@@ -177,12 +176,12 @@ export default {
       axios
         .get("http://localhost:3001/tasks")
         .then(response =>{
-            response.data.forEach((value) => {
-              if (!this.toDoList.includes(value)) {
-                value.marks = this.fixToDoListMarks(value.marks);
-                this.toDoList.push(value);
-              }
-            })
+          
+          this.toDoList = response.data.filter( value => !(this.toDoList.includes(value)))
+
+          this.toDoList.forEach( value => {
+            value.marks = this.fixToDoListMarks(value.marks);
+          })
         })
         .catch(error => {
             console.log(error);
@@ -286,204 +285,185 @@ export default {
 </script>
 
 <style scoped lang="scss">
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  @import "@/assets/main.module.scss";
 
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-}
-
-.wrapper{
-  width: 270px;
-  margin: 0 auto;
-}
-
-
-$blueColor: #0091DC;
-
-$btnTextColor: #ffffff;
-$btnFontSize: 16px;
-
-.button{
-  display: flex;
-  justify-content: center;
-
-  input{
-    padding: 15px;
-    border: 0;
-    border-radius: 6px;  
-    
-    background-color: $blueColor;
-
-    font-size: $btnFontSize;
-    color: $btnTextColor;
-
-    cursor: pointer;
-    
-    &:hover{
-      opacity: 0.9;
-    }
-  }
-}
-
-$headerFontSize: 18px;
-$headerFontColor: #808080;
-
-$inputFontSize: 16px;
-$inputFontColor: #414141;
-
-.sort{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  &__radio{
-    background-color: #ffffff;
-    padding: 10px;
-  }
-
-  &__wrapper{
-    background-color: #ffffff;
-    padding: 10px;
-  }
-
-  h2{
-    font-size: $headerFontSize;
-    color: $headerFontColor;
-  }
-  
-  ul{
-    list-style: none;
-    li{
-
-      margin-top: 8px;
-
-      font-size: $inputFontSize;
-      color: $inputFontColor;
-
-      display: flex;
-      align-items: center;
-
-      input{
-      width: 18px;
-      height: 18px;
-
-      border: 20px solid #000000;
-      }
-      label{
-        margin-left: 5px;
-        margin-top: 2px;
-
-        cursor: pointer;
-      }
-    }
-    
-  }
-  &__radio{
-    margin-top: 30px;
-  }
-  &__wrapper{
-    margin-top: 30px;
-
+  .button{
     display: flex;
-    gap: 30px;
-  }
-}
+    justify-content: center;
 
-.tasks{
-  margin-top: 30px;
-
-  .task{
-    background-color: #ffffff;
-    padding: 10px;
-
-    margin-top: 30px;
-    cursor: pointer;
-    
-
-    ul li h2{
-      display: block;
-      word-wrap: break-word;
-    }
-  }
-
-  ul{
-    list-style: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .wrapper{
-    width: 90%;
-  }
-  .viewTasks{
-    display: grid;
-    gap: 50px;
-
-    grid-template-columns: (200px, );
-    grid-template-rows: (50px, );
-    
-    .button{
-      margin-top: 30px;
-      display: block;
+    button{
+      padding: 15px;
+      border: 0;
+      border-radius: 6px;  
       
-      grid-column-start: 2;
-      grid-column-end: 3;
+      background-color: $blueBtnBackgroundColor;
+      color: $blueBtnFontColor;
 
-      grid-row-start: 1;
-      grid-row-end: 2;
+      font-size: $blueBtnFontSize;
+      
+      cursor: pointer;
+      
+      &:hover{
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .sort{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__radio{
+      background-color: #ffffff;
+      padding: 10px;
     }
 
-    .sort{
-      display: flex;
-      flex-direction: column;
-      justify-content: left;
+    &__wrapper{
+      background-color: #ffffff;
+      padding: 10px;
+    }
 
-      grid-column-start: 1;
-      grid-column-end: 2;
+    h2{
+      font-size: $headerFontSize;
+      color: $headerFontColor;
+    }
+    
+    ul{
+      list-style: none;
+      li{
 
-      grid-row-start: 1;
-      grid-row-end: 3;
+        margin-top: 8px;
 
-      &__radio{
-        background-color: #ffffff;
-        padding: 10px;
-      }
-
-      &__wrapper{
-        background-color: #ffffff;
-        padding: 10px;
+        font-size: $inputFontSize;
+        color: $inputFontColor;
 
         display: flex;
-        flex-direction: column;
+        align-items: center;
+
+        input{
+        width: 18px;
+        height: 18px;
+
+        border: 20px solid #000000;
+        }
+        label{
+          margin-left: 5px;
+          margin-top: 2px;
+
+          cursor: pointer;
+        }
+      }
+      
+    }
+    &__radio{
+      margin-top: 30px;
+    }
+    &__wrapper{
+      margin-top: 30px;
+
+      display: flex;
+      gap: 30px;
+    }
+  }
+
+  .tasks{
+    margin-top: 30px;
+
+    .task{
+      background-color: #ffffff;
+      padding: 10px;
+
+      margin-top: 30px;
+      cursor: pointer;
+      
+
+      ul li h2{
+        display: block;
+        word-wrap: break-word;
+      }
+
+      ul li ul li{
+        display: flex;
       }
     }
 
-    .tasks{
-      margin-top: 0;
+    ul{
+      list-style: none;
+    }
+  }
 
-      width: 100%;
+  @media (min-width: 768px) {
+    .wrapper{
+      width: 90%;
+    }
+    .viewTasks{
+      display: grid;
+      gap: 50px;
 
-      grid-column-start: 2;
-      grid-column-end: 3;
+      grid-template-columns: (200px, );
+      grid-template-rows: (50px, );
+      
+      .button{
+        margin-top: 30px;
+        display: block;
+        
+        grid-column-start: 2;
+        grid-column-end: 3;
 
-      grid-row-start: 2;
-      grid-row-end: 3;
+        grid-row-start: 1;
+        grid-row-end: 2;
+      }
 
-      .task{
-        background-color: #ffffff;
-        padding: 10px;
+      .sort{
+        display: flex;
+        flex-direction: column;
+        justify-content: left;
 
-        max-width: 65vw;
+        grid-column-start: 1;
+        grid-column-end: 2;
 
-        ul li h2{
-          max-width: 55vw;
+        grid-row-start: 1;
+        grid-row-end: 3;
 
+        &__radio{
+          background-color: #ffffff;
+          padding: 10px;
+        }
+
+        &__wrapper{
+          background-color: #ffffff;
+          padding: 10px;
+
+          display: flex;
+          flex-direction: column;
+        }
+      }
+
+      .tasks{
+        margin-top: 0;
+
+        width: 100%;
+
+        grid-column-start: 2;
+        grid-column-end: 3;
+
+        grid-row-start: 2;
+        grid-row-end: 3;
+
+        .task{
+          background-color: #ffffff;
+          padding: 10px;
+
+          max-width: 65vw;
+
+          ul li h2{
+            max-width: 55vw;
+
+          }
         }
       }
     }
   }
-}
 
 </style>

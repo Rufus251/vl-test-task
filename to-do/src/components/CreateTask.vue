@@ -1,9 +1,9 @@
 <template>
     <div class="wrapper">
         <div class="button">
-            <a @click="$router.go(-1)">
+            <router-link to="/">
                 <input type="button" class="back" value="Назад">
-            </a>
+            </router-link>
         </div>
 
         <div class="taskData">
@@ -50,8 +50,8 @@
                         <textarea v-model="newTask.description" name="description" id="description" required placeholder="...">Description</textarea>
                     </li>
                 </ul>
-                <button @click="sendData(), add()" name="saveBtn" id="saveBtn"> Сохранить </button>
-            
+                <button type="submit" @click="sendData()" name="saveBtn" id="saveBtn"> Сохранить </button>
+
         </div>
     </div>
 </template>
@@ -77,7 +77,7 @@ export default {
     }
   },
 
-    created(){
+    monted(){
     this.getTask()
     },
 
@@ -85,10 +85,10 @@ export default {
         $route: 'getTask'
     },
   methods: {
-    printDate: function () {
+    printDate() {
         return new Date().toLocaleDateString();
     },
-    printTime: function () {
+    printTime() {
         return new Date().toLocaleTimeString();
     },
 
@@ -118,6 +118,8 @@ export default {
     },
 
     sendData(){
+        this.add();
+
         const path = "http://localhost:3001/tasks/" + this.taskId()
         if (this.newTask.date === ""){
             this.newTask.date = this.printDate() + ", " + this.printTime()
@@ -175,29 +177,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-    *{
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-
-        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    }
-
-
-    $backBtnBgColor: #ffffff;
-    $backTextColor: #434343;
-    
-    $btnFontSize: 16px;
-    .wrapper{
-        width: 270px;
-        margin: 0 auto;
-
-        display: flex;
-        flex-direction: column;
-
-        justify-content: center;
-        align-items: center;
-    }
+    @import "@/assets/main.module.scss";
     .button{
         width: 100%;
         display: flex;
@@ -208,7 +188,7 @@ export default {
             border: 0;
             border-radius: 6px;  
 
-            font-size: $btnFontSize;
+            font-size: $whiteBtnFontSize;
 
             cursor: pointer;
             
@@ -217,15 +197,11 @@ export default {
             }
         }
         .back{
-            color: $backTextColor;
-            background-color: $backBtnBgColor;
+            color: $whiteBtnFontColor;
+            background-color: $whiteBtnBackgroundColor;
         }
     }
 
-
-    $FontSize: 16px;
-    $HeaderFontColor: #808080;
-    $ContentFontColor: #464646;
     .taskData{
         background-color: #ffffff;
 
@@ -245,8 +221,8 @@ export default {
                 margin-top: 30px;
 
                 h2{
-                    font-size: $FontSize;
-                    color: $HeaderFontColor;
+                    font-size: $headerFontSize;
+                    color: $createHeaderFontColor;
                     font-weight: 400;
                 }
                 
@@ -264,8 +240,8 @@ export default {
                 }
 
                 p{
-                    font-size: $FontSize;
-                    color: $ContentFontColor;
+                    font-size: $pFontSize;
+                    color: $createTextFontColor;
                     font-weight: 400;
                 }
 
@@ -301,8 +277,8 @@ export default {
 
                     border: 1px solid #F1F1F1;
 
-                    font-size: $FontSize;
-                    color: $ContentFontColor;
+                    font-size: $pFontSize;
+                    color: $createTextFontColor;
                     font-weight: 400;
 
                     outline: none;
@@ -310,19 +286,15 @@ export default {
             }
         }
 
-
-
-        $saveBtnBgColor: #0091DC;
-        $saveBtnTextColor: #ffffff;
         button{
             margin: 30px auto;
             padding: 15px;
             border: 0;
             border-radius: 6px;  
 
-            font-size: $btnFontSize;
-            color: $saveBtnTextColor;
-            background-color: $saveBtnBgColor;
+            font-size: $blueBtnFontSize;
+            color: $blueBtnFontColor;
+            background-color: $blueBtnBackgroundColor;
 
 
             cursor: pointer;
