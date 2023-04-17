@@ -4,9 +4,7 @@
       
       <div class="viewTasks">
         <div class="button">
-          <a href="#/create/new">
-            <input type="button" value="Добавить задачу">
-          </a>
+          <button @click="createNewTask()"> Добавить задачу </button>
         </div>
         
         <div class="sort">
@@ -26,6 +24,7 @@
                 <input 
                 v-model="filterParams.oldest" 
                 @click="switchOldest()" 
+                checked
                 type="radio" value="old" id="old" name="data">
                 <label for="old">Старые</label>
               </li>
@@ -115,8 +114,9 @@
                   </li>
                   <li>
                     <p>
-                      Отметки: {{ toDo.marks[0] + " " + toDo.marks[1] + " " + toDo.marks[2] }}
+                      Отметки: 
                     </p>
+                    <pre v-for="marks in toDo.marks" :key="marks"> {{marks}}</pre>
                   </li>
                 </ul>
 
@@ -134,17 +134,15 @@
 
 <script>
 
-import axios from "axios";
+import {mapGetters} from 'vuex';
 
 export default {
   name: 'HeaderComponent',
 
   data(){
     return{
-      toDoList: [],
-
       filterParams: {
-        oldest: "",
+        oldest: "old",
         priority: [],
         marks: []
       },
@@ -161,35 +159,83 @@ export default {
     }
   },
 
-  created(){
-    this.fetchData(),
-    this.filterList(),
+  mounted(){
+    this.filterList()
     this.whereIsScroll()
   },
 
-  watch: {
-    $route: 'fetchData',
-  },
+  computed: mapGetters(['allTasks']),
 
   methods: {
-
-    fetchData(){
-      axios
-        .get("http://localhost:3001/tasks")
-        .then(response =>{
-            response.data.forEach((value) => {
-              if (!this.toDoList.includes(value)) {
-                value.marks = this.fixToDoListMarks(value.marks);
-                this.toDoList.push(value);
-              }
-            })
-        })
-        .catch(error => {
-            console.log(error);
-        });
+    // Редиректы
+    createNewTask(){
+      if (this.previusValue === 'new'){
+        this.allTasks.reverse()
+      }
+      this.$router.push(`/create/new`)
     },
 
-    fixToDoListMarks(marks){
+    redirect(id){
+      if (this.previusValue === 'new'){
+        this.allTasks.reverse()
+      }
+      let path = "view/" + id;
+      this.$router.push(path);
+    },
+
+    // Фильтрация списка
+    filterList(){
+      setTimeout(() => {
+
+        // Если нет фильтров, то весь список или до 15
+        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
+          this.filteredList = this.allTasks;
+
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+          return
+        }
+
+        // Если фильтры есть
+        this.filteredList = [];
+
+
+        this.allTasks.map( value => {
+
+          this.flagForFilter = false
+
+          // Проверка по меткам
+          value.marks.forEach( (mark) => {
+
+            // Если метка не нулевая
+            if (mark === ""){
+              return 
+            }
+    
+            // Если в фильтрах есть эта метка или меток нет
+            if ((this.filterParams.marks.includes(mark) ||  this.filterParams.marks.length === 0)){
+              this.flagForFilter = true
+            }
+            else{
+              return
+            }
+          })
+
+          // Если в таске есть нужный приоритет и отметка
+          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
+            this.filteredList.push(value);
+          }
+
+          // Отсекаем нужное кол-во задач
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+          
+        });
+
+      }, 200);
+    },
+
+    fixTasksMarks(marks){
       for (let i = 0; i < 3; i++){
         if (marks[i] == undefined){
           marks[i] = "";
@@ -202,65 +248,21 @@ export default {
       return marks;
     },
 
-    redirect(id){
-      let path = "view/" + id;
-      this.$router.push(path);
-    },
-
-    filterList(){
-      setTimeout(() => {
-        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
-          this.filteredList = this.toDoList;
-
-          this.filteredList = this.filteredList.slice(0, this.taskCounter)
-
-          return
-        }
-        this.filteredList = [];
-
-
-        this.toDoList.map( value => {
-
-          this.flagForFilter = false
-
-          value.marks.forEach( (mark) => {
-            if (mark === ""){
-              return 
-            }
-            
-            const markPlus = this.filterParams.marks + ", "
-
-            if ((this.filterParams.marks.includes(mark) || markPlus == mark || this.filterParams.marks.length === 0)){
-              this.flagForFilter = true
-            }
-            else{
-              return
-            }
-          })
-
-          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
-            this.filteredList.push(value);
-          }
-
-          this.filteredList = this.filteredList.slice(0, this.taskCounter)
-
-        });
-
-
-      }, 400);
-    },
-
+    // Фильтрация по дате
     switchOldest(){
+      
       setTimeout(() => {
-        if (this.filterParams.oldest !== this.previusValue){
-          this.filteredList.reverse()
-        }
-
-        this.previusValue = this.filterParams.oldest;
         
-      }, 400);
+        if (this.filterParams.oldest !== this.previusValue){
+          this.allTasks.reverse()
+          this.filterList()
+          
+          this.previusValue = this.filterParams.oldest
+        }
+      }, 200);
     },
 
+    // Подгрузка при прокрутке странцы вниз
     whereIsScroll(){
       setInterval(() => {
         var scrollHeight=document.documentElement.scrollHeight;
@@ -270,14 +272,14 @@ export default {
         if (currentScrollHeight >= scrollHeight - clientHeight - 400){
           this.taskCounter += 15;
 
-          if (this.taskCounter >= this.toDoList.length){
-            this.taskCounter = this.toDoList.length;
+          if (this.taskCounter >= this.allTasks.length){
+            this.taskCounter = this.allTasks.length;
           }
-
+          
           this.filterList();
-        }
 
-      }, 3000);
+        }
+      }, 500);
     }
   }
 
@@ -286,204 +288,185 @@ export default {
 </script>
 
 <style scoped lang="scss">
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  @import "@/assets/main.module.scss";
 
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-}
-
-.wrapper{
-  width: 270px;
-  margin: 0 auto;
-}
-
-
-$blueColor: #0091DC;
-
-$btnTextColor: #ffffff;
-$btnFontSize: 16px;
-
-.button{
-  display: flex;
-  justify-content: center;
-
-  input{
-    padding: 15px;
-    border: 0;
-    border-radius: 6px;  
-    
-    background-color: $blueColor;
-
-    font-size: $btnFontSize;
-    color: $btnTextColor;
-
-    cursor: pointer;
-    
-    &:hover{
-      opacity: 0.9;
-    }
-  }
-}
-
-$headerFontSize: 18px;
-$headerFontColor: #808080;
-
-$inputFontSize: 16px;
-$inputFontColor: #414141;
-
-.sort{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  &__radio{
-    background-color: #ffffff;
-    padding: 10px;
-  }
-
-  &__wrapper{
-    background-color: #ffffff;
-    padding: 10px;
-  }
-
-  h2{
-    font-size: $headerFontSize;
-    color: $headerFontColor;
-  }
-  
-  ul{
-    list-style: none;
-    li{
-
-      margin-top: 8px;
-
-      font-size: $inputFontSize;
-      color: $inputFontColor;
-
-      display: flex;
-      align-items: center;
-
-      input{
-      width: 18px;
-      height: 18px;
-
-      border: 20px solid #000000;
-      }
-      label{
-        margin-left: 5px;
-        margin-top: 2px;
-
-        cursor: pointer;
-      }
-    }
-    
-  }
-  &__radio{
-    margin-top: 30px;
-  }
-  &__wrapper{
-    margin-top: 30px;
-
+  .button{
     display: flex;
-    gap: 30px;
-  }
-}
+    justify-content: center;
 
-.tasks{
-  margin-top: 30px;
-
-  .task{
-    background-color: #ffffff;
-    padding: 10px;
-
-    margin-top: 30px;
-    cursor: pointer;
-    
-
-    ul li h2{
-      display: block;
-      word-wrap: break-word;
-    }
-  }
-
-  ul{
-    list-style: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .wrapper{
-    width: 90%;
-  }
-  .viewTasks{
-    display: grid;
-    gap: 50px;
-
-    grid-template-columns: (200px, );
-    grid-template-rows: (50px, );
-    
-    .button{
-      margin-top: 30px;
-      display: block;
+    button{
+      padding: 15px;
+      border: 0;
+      border-radius: 6px;  
       
-      grid-column-start: 2;
-      grid-column-end: 3;
+      background-color: $blueBtnBackgroundColor;
+      color: $blueBtnFontColor;
 
-      grid-row-start: 1;
-      grid-row-end: 2;
+      font-size: $blueBtnFontSize;
+      
+      cursor: pointer;
+      
+      &:hover{
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .sort{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &__radio{
+      background-color: #ffffff;
+      padding: 10px;
     }
 
-    .sort{
-      display: flex;
-      flex-direction: column;
-      justify-content: left;
+    &__wrapper{
+      background-color: #ffffff;
+      padding: 10px;
+    }
 
-      grid-column-start: 1;
-      grid-column-end: 2;
+    h2{
+      font-size: $headerFontSize;
+      color: $headerFontColor;
+    }
+    
+    ul{
+      list-style: none;
+      li{
 
-      grid-row-start: 1;
-      grid-row-end: 3;
+        margin-top: 8px;
 
-      &__radio{
-        background-color: #ffffff;
-        padding: 10px;
-      }
-
-      &__wrapper{
-        background-color: #ffffff;
-        padding: 10px;
+        font-size: $inputFontSize;
+        color: $inputFontColor;
 
         display: flex;
-        flex-direction: column;
+        align-items: center;
+
+        input{
+        width: 18px;
+        height: 18px;
+
+        border: 20px solid #000000;
+        }
+        label{
+          margin-left: 5px;
+          margin-top: 2px;
+
+          cursor: pointer;
+        }
+      }
+      
+    }
+    &__radio{
+      margin-top: 30px;
+    }
+    &__wrapper{
+      margin-top: 30px;
+
+      display: flex;
+      gap: 30px;
+    }
+  }
+
+  .tasks{
+    margin-top: 30px;
+
+    .task{
+      background-color: #ffffff;
+      padding: 10px;
+
+      margin-top: 30px;
+      cursor: pointer;
+      
+
+      ul li h2{
+        display: block;
+        word-wrap: break-word;
+      }
+
+      ul li ul li{
+        display: flex;
       }
     }
 
-    .tasks{
-      margin-top: 0;
+    ul{
+      list-style: none;
+    }
+  }
 
-      width: 100%;
+  @media (min-width: 768px) {
+    .wrapper{
+      width: 90%;
+    }
+    .viewTasks{
+      display: grid;
+      gap: 50px;
 
-      grid-column-start: 2;
-      grid-column-end: 3;
+      grid-template-columns: (200px, );
+      grid-template-rows: (50px, );
+      
+      .button{
+        margin-top: 30px;
+        display: block;
+        
+        grid-column-start: 2;
+        grid-column-end: 3;
 
-      grid-row-start: 2;
-      grid-row-end: 3;
+        grid-row-start: 1;
+        grid-row-end: 2;
+      }
 
-      .task{
-        background-color: #ffffff;
-        padding: 10px;
+      .sort{
+        display: flex;
+        flex-direction: column;
+        justify-content: left;
 
-        max-width: 65vw;
+        grid-column-start: 1;
+        grid-column-end: 2;
 
-        ul li h2{
-          max-width: 55vw;
+        grid-row-start: 1;
+        grid-row-end: 3;
 
+        &__radio{
+          background-color: #ffffff;
+          padding: 10px;
+        }
+
+        &__wrapper{
+          background-color: #ffffff;
+          padding: 10px;
+
+          display: flex;
+          flex-direction: column;
+        }
+      }
+
+      .tasks{
+        margin-top: 0;
+
+        width: 100%;
+
+        grid-column-start: 2;
+        grid-column-end: 3;
+
+        grid-row-start: 2;
+        grid-row-end: 3;
+
+        .task{
+          background-color: #ffffff;
+          padding: 10px;
+
+          max-width: 65vw;
+
+          ul li h2{
+            max-width: 55vw;
+
+          }
         }
       }
     }
   }
-}
 
 </style>

@@ -1,12 +1,8 @@
 <template>
     <div class="wrapper">
         <div class="button">
-            <a href="#/">
-                <input type="button" class="back" value="Назад">
-            </a>
-            <a :href="`#/create/${this.taskId()}`">
-                <input @click="editTaskRedirect" type="button" class="edit" value="Редактировать">
-            </a>
+            <button @click="$router.back()" class="back"> Назад </button>
+            <button @click="routerToEdit()" type="button" class="edit"> Редактировать</button>
         </div>
 
         <div class="taskData">
@@ -39,9 +35,7 @@
                     <h2>
                         ОТМЕТКИ
                     </h2>
-                    <p>
-                        {{ this.task.marks[0] + " " + this.task.marks[1] + " " + this.task.marks[2] }}
-                    </p>
+                    <span v-for="marks in task.marks" :key="marks"> {{marks}}, </span>
                 </li>
                 <li>
                     <h2>
@@ -54,14 +48,14 @@
             </ul>
         </div>
         <div class="deleteBtn">
-            <input @click="deleteTask()" type="button" class="delete" value="Удалить">
+            <button @click="delTask()" type="button" class="delete"> Удалить </button>
         </div>
     </div>
 </template>
 
 <script>
 
-import axios from "axios";
+import { mapGetters, mapMutations } from 'vuex';
 
 export default{
     data(){
@@ -69,90 +63,58 @@ export default{
             task: {
                 name: "",
                 priority: "",
-                marks: ["", "", ""],
+                marks: [],
                 description: "",
                 date: "",
             }
         }
     },
 
-    created(){
+    mounted(){
         this.getTask()
     },
 
-    watch: {
-        $route: 'getTask'
-    },
+    computed: mapGetters(['allTasks']),
 
     methods: {
+        ...mapMutations(['deleteTask']),
         
+        // Получение таска для просмотра
+        getTask(){
+            const requiredTask = this.allTasks.find( value => {
+                if(value.id === this.taskId()){
+                    return value
+                }
+            })
+
+            this.task.name =  requiredTask.name,
+            this.task.priority =  requiredTask.priority,
+            this.task.marks = requiredTask.marks,
+            this.task.description =  requiredTask.description,
+            this.task.date =  requiredTask.date,
+            this.task.id = requiredTask.id
+        },
+
         taskId(){
             return parseInt(this.$route.params.id);
         },
 
-        deleteTask(){
-            const path = "http://localhost:3001/tasks/" + this.taskId();
-            axios.delete(path);
-            this.$router.go(-1)
+        delTask(){
+            this.deleteTask(this.taskId())
+            this.$router.back()
         },
 
-        getTask(){
-            axios
-            .get("http://localhost:3001/tasks", {
-                params: {
-                    id: this.taskId(),
-                }
-            })
-            .then(response =>{
-                this.task.name =  response.data[0].name,
-                this.task.priority =  response.data[0].priority,
-                this.task.marks = this.fixToDoListMarks(response.data[0].marks),
-                this.task.description =  response.data[0].description,
-                this.task.date =  response.data[0].date
-            })
-            .catch(error => {
-                console.log(error);
-            });
-        },
-
-        fixToDoListMarks(marks){
-            for (let i = 0; i < 3; i++){
-                if (marks[i] == undefined){
-                marks[i] = "";
-                }
-                if (marks[i+1] != undefined){
-                marks[i] = marks[i] + ", "
-                }
-            }
-      
-            return marks;
-        },
+        routerToEdit(){
+            const id = this.taskId()
+            const path = "/create/" + id;
+            this.$router.push(path);
+        }
     }
 }
 </script>
 
-
-
 <style scoped lang="scss">
-    *{
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-
-        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-    }
-
-    $backBtnBgColor: #ffffff;
-    $editBtnBgColor: #0091DC;
-    
-    $backTextColor: #434343;
-    $editTextColor: #ffffff;
-    
-    $btnFontSize: 16px;
-    .wrapper{
-        width: 270px;
-        margin: 0 auto;
-    }
+    @import "@/assets/main.module.scss";
     .button{
         width: 100%;
 
@@ -162,12 +124,10 @@ export default{
 
         gap: 15px;
 
-        input{
+        button{
             padding: 15px;
             border: 0;
             border-radius: 6px;  
-
-            font-size: $btnFontSize;
 
             cursor: pointer;
             
@@ -176,19 +136,17 @@ export default{
             }
         }
         .back{
-            color: $backTextColor;
-            background-color: $backBtnBgColor;
+            color: $whiteBtnFontColor;
+            background-color: $whiteBtnBackgroundColor;
+            font-size: $whiteBtnFontSize;
         }
         .edit{
-            color: $editTextColor;
-            background-color: $editBtnBgColor;
+            color: $blueBtnFontColor;
+            background-color: $blueBtnBackgroundColor;
+            font-size: $blueBtnFontSize;
         }
     }
 
-
-    $FontSize: 16px;
-    $HeaderFontColor: #808080;
-    $ContentFontColor: #464646;
     .taskData{
         background-color: #ffffff;
         padding: 1px 25px 25px 25px;
@@ -202,28 +160,25 @@ export default{
                 margin-top: 25px;
 
                 h2{
-                    font-size: $FontSize;
-                    color: $HeaderFontColor;
+                    font-size: $headerFontSize;
+                    color: $viewHeaderFontColor;
                     font-weight: 400;
                 }
                 p{
                     word-break: break-word;
 
-                    font-size: $FontSize;
-                    color: $ContentFontColor;
+                    font-size: $pFontSize;
+                    color: $viewTextFontColor;
                     font-weight: 400;
                 }
             }
         }
     }
 
-
-    $deleteBtnBgColor: #F34949;
-    $deleteTextColor: #ffffff;
     .deleteBtn{
         display: flex;
         justify-content: center;
-        input{
+        .delete{
             margin-top: 30px;
             margin-left: 15px;
             padding: 15px;
@@ -231,9 +186,9 @@ export default{
             border: 0;
             border-radius: 6px;  
 
-            font-size: $btnFontSize;
-            background-color: $deleteBtnBgColor;
-            color: $deleteTextColor;
+            font-size: $redBtnFontSize;
+            background-color: $redBtnBackgroundColor;
+            color: $redBtnFontColor;
 
             cursor: pointer;
             
@@ -286,7 +241,7 @@ export default{
 
                 justify-content: right;
 
-                input{
+                .delete{
                     margin: 0;
                 }
             }

@@ -1,0 +1,47 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.wrapper{
+    width: 270px;
+    margin: 0 auto;
+}
+
+// default
+$btnFontSize: 32px;
+$headerFontSize: 18px;
+$pFontSize: 16px;
+
+// blue btn settings
+$blueBtnBackgroundColor: #0091DC;
+$blueBtnFontColor: #FFFFFF;
+$blueBtnFontSize:16px;
+
+// white btn settings
+$whiteBtnBackgroundColor: #FFFFFF;
+$whiteBtnFontColor: #434343;
+$whiteBtnFontSize:16px;
+
+// red btn settings
+$redBtnBackgroundColor: #F34949;
+$redBtnFontColor: #FFFFFF;
+$redBtnFontSize:16px;
+
+// Header sort settings
+$headerFontSize: 18px;
+$headerFontColor: #808080;
+
+$inputFontSize: 16px;
+$inputFontColor: #414141;
+
+// ViewTask text settings
+$viewHeaderFontColor: #808080;
+$viewTextFontColor: #464646;
+
+// CreateTask text settings
+$createHeaderFontColor: #808080;
+$createTextFontColor: #464646;
