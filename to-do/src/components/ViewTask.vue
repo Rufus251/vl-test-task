@@ -35,7 +35,7 @@
                     <h2>
                         ОТМЕТКИ
                     </h2>
-                    <span v-for="marks in task.marks" :key="marks"> {{marks}}</span>
+                    <span v-for="marks in task.marks" :key="marks"> {{marks}}, </span>
                 </li>
                 <li>
                     <h2>
@@ -48,14 +48,14 @@
             </ul>
         </div>
         <div class="deleteBtn">
-            <button @click="deleteTask()" type="button" class="delete"> Удалить </button>
+            <button @click="delTask()" type="button" class="delete"> Удалить </button>
         </div>
     </div>
 </template>
 
 <script>
 
-import axios from "axios";
+import { mapGetters, mapMutations } from 'vuex';
 
 export default{
     data(){
@@ -63,7 +63,7 @@ export default{
             task: {
                 name: "",
                 priority: "",
-                marks: ["", "", ""],
+                marks: [],
                 description: "",
                 date: "",
             }
@@ -74,61 +74,40 @@ export default{
         this.getTask()
     },
 
-    watch: {
-        $route: 'getTask'
-    },
+    computed: mapGetters(['allTasks']),
 
     methods: {
+        ...mapMutations(['deleteTask']),
         
+        // Получение таска для просмотра
+        getTask(){
+            const requiredTask = this.allTasks.find( value => {
+                if(value.id === this.taskId()){
+                    return value
+                }
+            })
+
+            this.task.name =  requiredTask.name,
+            this.task.priority =  requiredTask.priority,
+            this.task.marks = requiredTask.marks,
+            this.task.description =  requiredTask.description,
+            this.task.date =  requiredTask.date,
+            this.task.id = requiredTask.id
+        },
+
         taskId(){
             return parseInt(this.$route.params.id);
         },
 
-        deleteTask(){
-            const path = "http://localhost:3001/tasks/" + this.taskId();
-            axios.delete(path);
-            this.$router.go(-1)
-        },
-
-        getTask(){
-            axios
-            .get("http://localhost:3001/tasks", {
-                params: {
-                    id: this.taskId(),
-                }
-            })
-            .then(response =>{
-                this.task.name =  response.data[0].name,
-                this.task.priority =  response.data[0].priority,
-                this.task.marks = this.fixToDoListMarks(response.data[0].marks),
-                this.task.description =  response.data[0].description,
-                this.task.date =  response.data[0].date
-            })
-            .catch(error => {
-                console.log(error);
-            });
-        },
-
-        fixToDoListMarks(marks){
-            for (let i = 0; i < 3; i++){
-                if (marks[i] == undefined){
-                marks[i] = "";
-                }
-                if (marks[i+1] != undefined){
-                marks[i] = marks[i] + ", "
-                }
-            }
-      
-            return marks;
+        delTask(){
+            this.deleteTask(this.taskId())
+            this.$router.back()
         },
 
         routerToEdit(){
-            console.log(this.taskId());
             const id = this.taskId()
             const path = "/create/" + id;
-            console.log(path)
             this.$router.push(path);
-
         }
     }
 }

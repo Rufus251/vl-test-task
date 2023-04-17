@@ -50,7 +50,7 @@
                         <textarea v-model="newTask.description" name="description" id="description" required placeholder="...">Description</textarea>
                     </li>
                 </ul>
-                <button type="submit" @click="sendData()" name="saveBtn" id="saveBtn"> Сохранить </button>
+                <button type="submit" @click="add()" name="saveBtn" id="saveBtn"> Сохранить </button>
 
         </div>
     </div>
@@ -58,119 +58,94 @@
 
 <script>
 
-import axios from "axios";
+import { mapGetters, mapMutations } from 'vuex';
 
 export default {
-  name: 'CreateTask',
+    name: 'CreateTask',
 
-  data(){
-    return{
-        newTask: {
-            name: "",
-            priority: "",
-            marks: [],
-            description: "",
-            date: "",
+    data(){
+        return{
+            newTask: {
+                name: "",
+                priority: "",
+                marks: [],
+                description: "",
+                date: "",
+                id: 1,
+            },
+        }
+    },
+
+    mounted(){
+        this.getTask()
+    },
+
+    computed: mapGetters(['allTasks']),
+    
+    methods: {
+        ...mapMutations(['addTask']),
+
+        printDate() {
+            return new Date().toLocaleDateString();
         },
-        
-        toDoList: []
-    }
-  },
+        printTime() {
+            return new Date().toLocaleTimeString();
+        },
 
-    monted(){
-    this.getTask()
-    },
+        add(){
+            // Проверка на заполненность полей
+            if (this.newTask.name === "" || this.newTask.priority == "" || this.newTask.description === "") {
+                return;
+            }
 
-    watch: {
-        $route: 'getTask'
-    },
-  methods: {
-    printDate() {
-        return new Date().toLocaleDateString();
-    },
-    printTime() {
-        return new Date().toLocaleTimeString();
-    },
+            // Редактируем id
+            if (this.$route.params.id === 'new' && this.allTasks.length){
+                this.newTask.id = this.allTasks[this.allTasks.length - 1].id + 1
+            }
 
-    add(){
-        // Проверка на заполненность полей
-        if (this.newTask.name === "" || this.newTask.priority == "" || this.newTask.description === "") {
-            return;
-        }
-
-        //console.log(this.newTask, this.toDoList)
-
-        this.newTask.date = this.printDate() + ", " + this.printTime();
-
-        // Добавляем в массив задач
-        this.toDoList.push(this.newTask.name);
-
-        // Выставляем базовые значения
-        this.newTask.name="";
-        this.newTask.priority="";
-        this.newTask.marks=[];
-        this.newTask.description="";
-
-        //console.log(this.toDoList);
-
-        // Переход на главную страницу
-        this.$router.push('/');
-    },
-
-    sendData(){
-        this.add();
-
-        const path = "http://localhost:3001/tasks/" + this.taskId()
-        if (this.newTask.date === ""){
-            this.newTask.date = this.printDate() + ", " + this.printTime()
-            axios
-            .post("http://localhost:3001/tasks", {
+            // Отправка на сервер и в vuex массив
+            this.addTask({
                 name: this.newTask.name,
                 priority: this.newTask.priority,
                 marks: this.newTask.marks,
                 description: this.newTask.description,
-                date: this.newTask.date
-        })
-        }
-        else{
-            axios.put( path, {
-                name: this.newTask.name,
-                priority: this.newTask.priority,
-                marks: this.newTask.marks,
-                description: this.newTask.description,
-                date: this.newTask.date
-            })
-        }
-        
+                date: this.newTask.date,
+                id: this.newTask.id
+            });
 
-        
-    },
+            // Выставляем базовые значения
+            this.newTask.name="";
+            this.newTask.priority="";
+            this.newTask.marks=[];
+            this.newTask.description="";
 
-    taskId(){
+            // Переход на главную страницу
+            this.$router.push('/');
+        },
+
+        taskId(){
             return parseInt(this.$route.params.id);
         },
 
-    getTask(){
-        axios
-        .get("http://localhost:3001/tasks", {
-            params: {
-                id: this.taskId(),
+        getTask(){
+            if (this.$route.params.id === "new"){
+                return
             }
-        })
-        .then(response =>{
-            console.log(response.data[0].marks),
-            this.newTask.name =  response.data[0].name,
-            this.newTask.priority =  response.data[0].priority,
-            this.newTask.marks = response.data[0].marks,
-            this.newTask.description =  response.data[0].description,
-            this.newTask.date =  response.data[0].date
-        })
-        .catch(error => {
-            console.log(error);
-        });
-    },
+            const requiredTask = this.allTasks.find( value => {
+                if(value.id === this.taskId()){
+                    return value
+                }
+            })
 
-  }
+            this.newTask.name =  requiredTask.name,
+            this.newTask.priority =  requiredTask.priority,
+            this.newTask.marks = requiredTask.marks,
+            this.newTask.description =  requiredTask.description,
+            this.newTask.date =  requiredTask.date,
+            this.newTask.id = requiredTask.id
+        },
+
+    }
 
 };
 

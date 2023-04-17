@@ -4,7 +4,7 @@
       
       <div class="viewTasks">
         <div class="button">
-          <button @click="$router.push(`/create/new`)"> Добавить задачу </button>
+          <button @click="createNewTask()"> Добавить задачу </button>
         </div>
         
         <div class="sort">
@@ -24,6 +24,7 @@
                 <input 
                 v-model="filterParams.oldest" 
                 @click="switchOldest()" 
+                checked
                 type="radio" value="old" id="old" name="data">
                 <label for="old">Старые</label>
               </li>
@@ -133,17 +134,15 @@
 
 <script>
 
-import axios from "axios";
+import {mapGetters} from 'vuex';
 
 export default {
   name: 'HeaderComponent',
 
   data(){
     return{
-      toDoList: [],
-
       filterParams: {
-        oldest: "",
+        oldest: "old",
         priority: [],
         marks: []
       },
@@ -159,36 +158,84 @@ export default {
       previusValue: "old"
     }
   },
-  
+
   mounted(){
-    this.fetchData(),
-    this.filterList(),
+    this.filterList()
     this.whereIsScroll()
   },
 
-  watch: {
-    $route: 'fetchData',
-  },
+  computed: mapGetters(['allTasks']),
 
   methods: {
-
-    fetchData(){
-      axios
-        .get("http://localhost:3001/tasks")
-        .then(response =>{
-          
-          this.toDoList = response.data.filter( value => !(this.toDoList.includes(value)))
-
-          this.toDoList.forEach( value => {
-            value.marks = this.fixToDoListMarks(value.marks);
-          })
-        })
-        .catch(error => {
-            console.log(error);
-        });
+    // Редиректы
+    createNewTask(){
+      if (this.previusValue === 'new'){
+        this.allTasks.reverse()
+      }
+      this.$router.push(`/create/new`)
     },
 
-    fixToDoListMarks(marks){
+    redirect(id){
+      if (this.previusValue === 'new'){
+        this.allTasks.reverse()
+      }
+      let path = "view/" + id;
+      this.$router.push(path);
+    },
+
+    // Фильтрация списка
+    filterList(){
+      setTimeout(() => {
+
+        // Если нет фильтров, то весь список или до 15
+        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
+          this.filteredList = this.allTasks;
+
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+          return
+        }
+
+        // Если фильтры есть
+        this.filteredList = [];
+
+
+        this.allTasks.map( value => {
+
+          this.flagForFilter = false
+
+          // Проверка по меткам
+          value.marks.forEach( (mark) => {
+
+            // Если метка не нулевая
+            if (mark === ""){
+              return 
+            }
+    
+            // Если в фильтрах есть эта метка или меток нет
+            if ((this.filterParams.marks.includes(mark) ||  this.filterParams.marks.length === 0)){
+              this.flagForFilter = true
+            }
+            else{
+              return
+            }
+          })
+
+          // Если в таске есть нужный приоритет и отметка
+          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
+            this.filteredList.push(value);
+          }
+
+          // Отсекаем нужное кол-во задач
+          this.filteredList = this.filteredList.slice(0, this.taskCounter)
+
+          
+        });
+
+      }, 200);
+    },
+
+    fixTasksMarks(marks){
       for (let i = 0; i < 3; i++){
         if (marks[i] == undefined){
           marks[i] = "";
@@ -201,65 +248,21 @@ export default {
       return marks;
     },
 
-    redirect(id){
-      let path = "view/" + id;
-      this.$router.push(path);
-    },
-
-    filterList(){
-      setTimeout(() => {
-        if (this.filterParams.marks.length === 0 && this.filterParams.priority.length === 0){
-          this.filteredList = this.toDoList;
-
-          this.filteredList = this.filteredList.slice(0, this.taskCounter)
-
-          return
-        }
-        this.filteredList = [];
-
-
-        this.toDoList.map( value => {
-
-          this.flagForFilter = false
-
-          value.marks.forEach( (mark) => {
-            if (mark === ""){
-              return 
-            }
-            
-            const markPlus = this.filterParams.marks + ", "
-
-            if ((this.filterParams.marks.includes(mark) || markPlus == mark || this.filterParams.marks.length === 0)){
-              this.flagForFilter = true
-            }
-            else{
-              return
-            }
-          })
-
-          if ((this.filterParams.priority.includes(value.priority) || this.filterParams.priority.length === 0) && this.flagForFilter === true){
-            this.filteredList.push(value);
-          }
-
-          this.filteredList = this.filteredList.slice(0, this.taskCounter)
-
-        });
-
-
-      }, 400);
-    },
-
+    // Фильтрация по дате
     switchOldest(){
+      
       setTimeout(() => {
-        if (this.filterParams.oldest !== this.previusValue){
-          this.filteredList.reverse()
-        }
-
-        this.previusValue = this.filterParams.oldest;
         
-      }, 400);
+        if (this.filterParams.oldest !== this.previusValue){
+          this.allTasks.reverse()
+          this.filterList()
+          
+          this.previusValue = this.filterParams.oldest
+        }
+      }, 200);
     },
 
+    // Подгрузка при прокрутке странцы вниз
     whereIsScroll(){
       setInterval(() => {
         var scrollHeight=document.documentElement.scrollHeight;
@@ -269,14 +272,14 @@ export default {
         if (currentScrollHeight >= scrollHeight - clientHeight - 400){
           this.taskCounter += 15;
 
-          if (this.taskCounter >= this.toDoList.length){
-            this.taskCounter = this.toDoList.length;
+          if (this.taskCounter >= this.allTasks.length){
+            this.taskCounter = this.allTasks.length;
           }
-
+          
           this.filterList();
-        }
 
-      }, 3000);
+        }
+      }, 500);
     }
   }
 
